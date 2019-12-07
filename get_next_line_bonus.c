@@ -6,7 +6,7 @@
 /*   By: omulder <omulder@student.codam.nl>           +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2019/12/06 18:28:29 by omulder        #+#    #+#                */
-/*   Updated: 2019/12/07 22:56:40 by omulder       ########   odam.nl         */
+/*   Updated: 2019/12/08 00:09:00 by omulder       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,17 +34,16 @@ int			get_from_buffer(t_fdlist *current, char **line)
 	int		find;
 	char	*tmp;
 
-	free(*line);
 	find = ft_strfind_c(current->buf, '\n');
 	if (find == -1)
 	{
-		*line = ft_strdup(current->buf);
+		*line = ft_strjoinfree_s1(*line, current->buf);
 		free(current->buf);
 		current->buf = NULL;
 		return (0);
 	}
 	current->buf[find] = '\0';
-	*line = ft_strdup(current->buf);
+	*line = ft_strjoinfree_s1(*line, current->buf);
 	find++;
 	tmp = ft_strdup(&(current->buf[find]));
 	free(current->buf);
@@ -56,33 +55,6 @@ int			get_from_buffer(t_fdlist *current, char **line)
 	else
 		free(tmp);
 	return (1);
-}
-
-int			check_read_buf(t_fdlist *current, char **line, char *read_buf,
-int ret)
-{
-	int		find;
-
-	find = 0;
-	find = ft_strfind_c(read_buf, '\n');
-	if (find != -1)
-		read_buf[find] = '\0';
-	*line = ft_strjoinfree_s1(*line, read_buf);
-	if (*line == NULL)
-		return (-1);
-	if (find != -1)
-	{
-		find++;
-		current->buf = ft_strdup(&(read_buf[find]));
-		if (current->buf == NULL)
-			return (-1);
-		free(read_buf);
-		return (1);
-	}
-	free(read_buf);
-	if (ret < BUFFER_SIZE)
-		return (0);
-	return (2);
 }
 
 int			free_buffer_item(t_fdlist **lst, t_fdlist *current)
@@ -119,14 +91,13 @@ int			get_line(t_fdlist **lst, t_fdlist *current, char **line)
 			return (FUNCT_ERROR);
 		if (ret == 0)
 			return (free_buffer_item(lst, current));
-		ret = check_read_buf(current, line, read_buf, ret);
+		current->buf = read_buf;
+		ret = get_from_buffer(current, line);
+		if (ret == -1)
+			return (FUNCT_ERROR);
 		if (ret == 1)
 			return (FUNCT_SUCCESS);
 		if (ret == 0)
-			return (free_buffer_item(lst, current));
-		if (ret == -1)
-			return (FUNCT_ERROR);
-		if (ret == 2)
 			ret = BUFFER_SIZE;
 	}
 	return (FUNCT_SUCCESS);
