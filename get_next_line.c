@@ -6,28 +6,12 @@
 /*   By: omulder <omulder@student.codam.nl>           +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2019/12/06 18:28:29 by omulder        #+#    #+#                */
-/*   Updated: 2019/12/08 00:09:00 by omulder       ########   odam.nl         */
+/*   Updated: 2019/12/08 10:15:24 by omulder       ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 #include <stdlib.h>
-
-t_fdlist	*fdlist_find_create(t_fdlist **lst, int fd)
-{
-	t_fdlist	*current;
-
-	if (lst == NULL || *lst == NULL)
-		return (fdlist_add_new(lst, fd));
-	current = *lst;
-	while (current != NULL)
-	{
-		if (current->fd == fd)
-			return (current);
-		current = current->next;
-	}
-	return (fdlist_add_new(lst, fd));
-}
 
 int			get_from_buffer(t_fdlist *current, char **line)
 {
@@ -45,7 +29,7 @@ int			get_from_buffer(t_fdlist *current, char **line)
 	current->buf[find] = '\0';
 	*line = ft_strjoinfree_s1(*line, current->buf);
 	find++;
-	tmp = ft_strdup(&(current->buf[find]));
+	tmp = ft_strjoinfree_s1(NULL, &(current->buf[find]));
 	free(current->buf);
 	current->buf = NULL;
 	if (tmp == NULL)
@@ -55,24 +39,6 @@ int			get_from_buffer(t_fdlist *current, char **line)
 	else
 		free(tmp);
 	return (1);
-}
-
-int			free_buffer_item(t_fdlist **lst, t_fdlist *current)
-{
-	t_fdlist *ptr;
-
-	free(current->buf);
-	if (*lst == current)
-		*lst = (*lst)->next;
-	else
-	{
-		ptr = *lst;
-		while (ptr->next != current)
-			ptr = ptr->next;
-		ptr->next = current->next;
-	}
-	free(current);
-	return (FUNCT_EOF);
 }
 
 int			get_line(t_fdlist **lst, t_fdlist *current, char **line)
